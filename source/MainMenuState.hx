@@ -31,7 +31,7 @@ class MainMenuState extends MusicBeatState
 	private var camGame:FlxCamera;
 	private var camAchievement:FlxCamera;
 	
-		var optionShit:Array<String> = [
+	var optionShit:Array<String> = [
 		'story_mode',
 		'freeplay',
 		//#if ACHIEVEMENTS_ALLOWED 'awards', #end
@@ -44,6 +44,11 @@ class MainMenuState extends MusicBeatState
 	var camFollow:FlxObject;
 	var camFollowPos:FlxObject;
 
+	private var char1:Character = null;
+	private var char2:Character = null;
+	private var char3:Character = null;
+	private var char4:Character = null;
+	
 	override function create()
 	{
 		#if desktop
