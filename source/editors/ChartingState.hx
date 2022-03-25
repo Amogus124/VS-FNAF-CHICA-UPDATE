@@ -221,17 +221,21 @@ class ChartingState extends MusicBeatState
 			_song = {
 				song: 'Test',
 				notes: [],
+				events: [],
 				bpm: 150.0,
 				needsVoices: true,
 				arrowSkin: '',
-				splashSkin: '',
+				splashSkin: 'noteSplashes',//idk it would crash if i didn't
 				player1: 'bf',
 				player2: 'dad',
-				player3: 'gf',
+				player3: null,
+				gfVersion: 'gf',
 				speed: 1,
 				stage: 'stage',
 				validScore: false
 			};
+			addSection();
+			PlayState.SONG = _song;
 		}
 		
 		if(curSection >= _song.notes.length) curSection = _song.notes.length - 1;
@@ -2020,21 +2024,22 @@ class ChartingState extends MusicBeatState
 			}
 
 			var sex:SwagSection = {
-				sectionNotes: arrayNotes,
-				lengthInSteps: 16,
-				typeOfSection: 0,
-				mustHitSection: false,
-				gfSection: false,
-				bpm: 0,
-				changeBPM: false,
-				altAnim: false
+			lengthInSteps: 16,
+			bpm: _song.bpm,
+			changeBPM: false,
+			mustHitSection: true,
+			gfSection: false,
+			sectionNotes: [],
+			typeOfSection: 0,
+			altAnim: false
 			};
 			events.push(sex);
 		}
 
 		var eventsSong:SwagSong = {
 			song: _song.song,
-			notes: events,
+			notes: [],
+			events: _song.events,
 			bpm: _song.bpm,
 			needsVoices: _song.needsVoices,
 			speed: _song.speed,
@@ -2043,7 +2048,8 @@ class ChartingState extends MusicBeatState
 
 			player1: _song.player1,
 			player2: _song.player2,
-			player3: _song.player3,
+			player3: null,
+			gfVersion: _song.gfVersion,
 			stage: _song.stage,
 			validScore: false
 		};
