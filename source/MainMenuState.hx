@@ -25,7 +25,7 @@ using StringTools;
 
 class MainMenuState extends MusicBeatState
 {
-	public static var psychEngineVersion:String = '0.5.1'; //This is also used for Discord RPC
+	public static var psychEngineVersion:String = '0.5.2h'; //This is also used for Discord RPC
 	public static var curSelected:Int = 0;
 
 	var menuItems:FlxTypedGroup<FlxSprite>;
@@ -35,6 +35,7 @@ class MainMenuState extends MusicBeatState
 	var optionShit:Array<String> = [
 		'story_mode',
 		'freeplay',
+		//#if MODS_ALLOWED 'mods', #end
 		//#if ACHIEVEMENTS_ALLOWED 'awards', #end
 		'credits',
 		//#if !switch 'donate', #end
@@ -57,6 +58,8 @@ class MainMenuState extends MusicBeatState
 		// Updating Discord Rich Presence
 		DiscordClient.changePresence("In the Menus", null);
 		#end
+
+		debugKeys = ClientPrefs.copyKey(ClientPrefs.keyBinds.get('debug_1'));
 
 		camGame = new FlxCamera();
 		camAchievement = new FlxCamera();
@@ -232,10 +235,10 @@ class MainMenuState extends MusicBeatState
 			}
 		}
 		#end
-		
-		#if mobileC
-		addVirtualPad(UP_DOWN, A_B);
-		#end
+
+    #if android
+  	addVirtualPad(UP_DOWN, A_B);
+    #end
 
 		super.create();
 	}
@@ -374,6 +377,10 @@ class MainMenuState extends MusicBeatState
 										MusicBeatState.switchState(new StoryMenuState());
 									case 'freeplay':
 										MusicBeatState.switchState(new FreeplayState());
+									#if MODS_ALLOWED
+									case 'mods':
+										MusicBeatState.switchState(new ModsMenuState());
+									#end
 									case 'awards':
 										MusicBeatState.switchState(new AchievementsMenuState());
 									case 'credits':

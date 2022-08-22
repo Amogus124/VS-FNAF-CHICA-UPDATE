@@ -29,23 +29,40 @@ using StringTools;
 
 class OptionsState extends MusicBeatState
 {
-	var options:Array<String> = ['Controls', 'Mobile Controls', 'Graphics', 'Visuals and UI', 'Gameplay'];
+	var options:Array<String> = ['Note Colors', 'Controls', 'Adjust Delay and Combo', 'Graphics', 'Visuals and UI', 'Gameplay'];
 	private var grpOptions:FlxTypedGroup<Alphabet>;
 	private static var curSelected:Int = 0;
 	public static var menuBG:FlxSprite;
 
 	function openSelectedSubstate(label:String) {
 		switch(label) {
+			case 'Note Colors':
+				#if android
+				removeVirtualPad();
+				#end
+				openSubState(new options.NotesSubState());
 			case 'Controls':
+				#if android
+				removeVirtualPad();
+				#end
 				openSubState(new options.ControlsSubState());
 			case 'Graphics':
+				#if android
+				removeVirtualPad();
+				#end
 				openSubState(new options.GraphicsSettingsSubState());
 			case 'Visuals and UI':
+				#if android
+				removeVirtualPad();
+				#end
 				openSubState(new options.VisualsUISubState());
 			case 'Gameplay':
+				#if android
+				removeVirtualPad();
+				#end
 				openSubState(new options.GameplaySettingsSubState());
-			case 'Mobile Controls':
-				MusicBeatState.switchState(new options.CustomControlsState());				
+			case 'Adjust Delay and Combo':
+				LoadingState.loadAndSwitchState(new options.NoteOffsetState());
 		}
 	}
 
@@ -59,8 +76,8 @@ class OptionsState extends MusicBeatState
 
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.color = 0xFFea71fd;
-		bg.setGraphicSize(Std.int(bg.width * 1.1));
 		bg.updateHitbox();
+
 		bg.screenCenter();
 		bg.antialiasing = ClientPrefs.globalAntialiasing;
 		add(bg);
@@ -81,11 +98,20 @@ class OptionsState extends MusicBeatState
 		selectorRight = new Alphabet(0, 0, '<', true, false);
 		add(selectorRight);
 
-		changeSelection();
+		#if android
+		var tipText:FlxText = new FlxText(10, 12, 0, 'Press C to Go In Android Controls Menu', 16);
+		tipText.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		tipText.borderSize = 2;
+		tipText.scrollFactor.set();
+		add(tipText);
+		#end
 
-		#if mobileC
-                addVirtualPad(UP_DOWN, A_B);
-                #end
+		changeSelection();
+		ClientPrefs.saveSettings();
+
+		#if android
+		addVirtualPad(UP_DOWN, A_B_C);
+		#end
 
 		super.create();
 	}
@@ -113,6 +139,12 @@ class OptionsState extends MusicBeatState
 		if (controls.ACCEPT) {
 			openSelectedSubstate(options[curSelected]);
 		}
+
+		#if android
+		if (_virtualpad.buttonC.justPressed) {
+			MusicBeatState.switchState(new android.AndroidControlsMenu());
+		}
+		#end
 	}
 	
 	function changeSelection(change:Int = 0) {

@@ -5,36 +5,60 @@ import openfl.utils.Assets;
 import lime.utils.Assets as LimeAssets;
 import lime.utils.AssetLibrary;
 import lime.utils.AssetManifest;
+import flixel.system.FlxSound;
+#if MODS_ALLOWED
+import sys.io.File;
+import sys.FileSystem;
+#else
 import openfl.utils.Assets;
-import flixel.util.FlxColor;
+#end
 
 using StringTools;
 
 class CoolUtil
 {
-	// [Difficulty name, Chart file suffix]
-	public static var difficultyStuff:Array<Dynamic> = [
-		['Easy', '-easy'],
-		['Normal', ''],
-		['Hard', '-hard']
+	public static var defaultDifficulties:Array<String> = [
+		'Easy',
+		'Normal',
+		'Hard'
 	];
+	public static var defaultDifficulty:String = 'Normal'; //The chart that has no suffix and starting difficulty on Freeplay/Story Mode
+
+	public static var difficulties:Array<String> = [];
+
+	public static function getDifficultyFilePath(num:Null<Int> = null)
+	{
+		if(num == null) num = PlayState.storyDifficulty;
+
+		var fileSuffix:String = difficulties[num];
+		if(fileSuffix != defaultDifficulty)
+		{
+			fileSuffix = '-' + fileSuffix;
+		}
+		else
+		{
+			fileSuffix = '';
+		}
+		return Paths.formatToSongPath(fileSuffix);
+	}
 
 	public static function difficultyString():String
 	{
-		return difficultyStuff[PlayState.storyDifficulty][0].toUpperCase();
+		return difficulties[PlayState.storyDifficulty].toUpperCase();
 	}
 
-	public static function boundTo(value:Float, min:Float, max:Float):Float {
-		var newValue:Float = value;
-		if(newValue < min) newValue = min;
-		else if(newValue > max) newValue = max;
-		return newValue;
+	inline public static function boundTo(value:Float, min:Float, max:Float):Float {
+		return Math.max(min, Math.min(max, value));
 	}
 
 	public static function coolTextFile(path:String):Array<String>
 	{
 		var daList:Array<String> = [];
+		#if MODS_ALLOWED
+		if(FileSystem.exists(path)) daList = File.getContent(path).trim().split('\n');
+		#else
 		if(Assets.exists(path)) daList = Assets.getText(path).trim().split('\n');
+		#end
 
 		for (i in 0...daList.length)
 		{
@@ -43,30 +67,43 @@ class CoolUtil
 
 		return daList;
 	}
+	public static function listFromString(string:String):Array<String>
+	{
+		var daList:Array<String> = [];
+		daList = string.trim().split('\n');
 
-	public static function smoothColorChange(from:FlxColor, to:FlxColor, speed:Float = 0.045):FlxColor
-        {
+		for (i in 0...daList.length)
+		{
+			daList[i] = daList[i].trim();
+		}
 
-            var result:FlxColor = FlxColor.fromRGBFloat
-            (
-                CoolUtil.coolLerp(from.redFloat, to.redFloat, speed), //red
-
-                CoolUtil.coolLerp(from.greenFloat, to.greenFloat, speed), //green
-
-                CoolUtil.coolLerp(from.blueFloat, to.blueFloat, speed) //blue
-            );
-
-            return result;
-}
-	public static function camLerpShit(a:Float):Float
-        {
-                return FlxG.elapsed / 0.016666666666666666 * a;
-        }
-
-        public static function coolLerp(a:Float, b:Float, c:Float):Float
-        {
-                return a + CoolUtil.camLerpShit(c) * (b - a);
-        }
+		return daList;
+	}
+	public static function dominantColor(sprite:flixel.FlxSprite):Int{
+		var countByColor:Map<Int, Int> = [];
+		for(col in 0...sprite.frameWidth){
+			for(row in 0...sprite.frameHeight){
+			  var colorOfThisPixel:Int = sprite.pixels.getPixel32(col, row);
+			  if(colorOfThisPixel != 0){
+				  if(countByColor.exists(colorOfThisPixel)){
+				    countByColor[colorOfThisPixel] =  countByColor[colorOfThisPixel] + 1;
+				  }else if(countByColor[colorOfThisPixel] != 13520687 - (2*13520687)){
+					 countByColor[colorOfThisPixel] = 1;
+				  }
+			  }
+			}
+		 }
+		var maxCount = 0;
+		var maxKey:Int = 0;//after the loop this will store the max color
+		countByColor[flixel.util.FlxColor.BLACK] = 0;
+			for(key in countByColor.keys()){
+			if(countByColor[key] >= maxCount){
+				maxCount = countByColor[key];
+				maxKey = key;
+			}
+		}
+		return maxKey;
+	}
 
 	public static function numberArray(max:Int, ?min = 0):Array<Int>
 	{
@@ -80,9 +117,11 @@ class CoolUtil
 
 	//uhhhh does this even work at all? i'm starting to doubt
 	public static function precacheSound(sound:String, ?library:String = null):Void {
-		if(!Assets.cache.hasSound(Paths.sound(sound, library))) {
-			FlxG.sound.cache(Paths.sound(sound, library));
-		}
+		Paths.sound(sound, library);
+	}
+
+	public static function precacheMusic(sound:String, ?library:String = null):Void {
+		Paths.music(sound, library);
 	}
 
 	public static function browserLoad(site:String) {

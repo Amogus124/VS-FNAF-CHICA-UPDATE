@@ -8,6 +8,7 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.addons.display.FlxGridOverlay;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.addons.transition.FlxTransitionableState;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
@@ -57,8 +58,6 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.color = 0xFFea71fd;
-		bg.setGraphicSize(Std.int(bg.width * 1.1));
-		bg.updateHitbox();
 		bg.screenCenter();
 		bg.antialiasing = ClientPrefs.globalAntialiasing;
 		add(bg);
@@ -126,9 +125,10 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		changeSelection();
 		reloadCheckboxes();
 
-		#if mobileC
-        addVirtualPad(FULL, A_B);
-        #end
+		#if android
+		addVirtualPad(FULL, A_B_C);
+		addPadCamera();
+		#end
 	}
 
 	public function addOption(option:Option) {
@@ -151,7 +151,12 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		}
 
 		if (controls.BACK) {
-			MusicBeatState.resetState();
+			#if android
+                        FlxTransitionableState.skipNextTransOut = true;
+			FlxG.resetState();
+                        #else
+                        close();
+                        #end
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 		}
 
@@ -244,7 +249,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 				}
 			}
 
-			if(controls.RESET)
+			if(controls.RESET #if android || _virtualpad.buttonC.justPressed #end)
 			{
 				for (i in 0...optionsArray.length)
 				{
